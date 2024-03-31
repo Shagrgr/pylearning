@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    {% csrf_token %}
+    <div class="topics-questions">
+        <div class="topic-selection">
+            <label for="topicSelect">Choose a topic:</label>
+            <select name="topics" id="topicSelect">
+                <option value="cntrol">Control Statements</option>
+                <option value="arrays">Arrays</option>
+                <option value="data">Data Types</option>
+            </select>
+        </div>
+        <h2 id="questionContainer" class="question-container"></h2>
+    </div>
+    <div class="editor-output">
+        <textarea name="code" id="codeInput"># Your Python code here...</textarea>
+        <div class="action-buttons">
+            <div id="scoreBanner">{{score}}</div> 
+            <button type="button" id="submitButton" class="button submit">Run</button>
+        </div>
+        <div id="consoleBox" class="console">
+        
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.1.9/sweetalert2.min.css" />
+<style>
+.container {
+    display: flex;
+    gap: 30px;
+    margin: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    color: #333; /* Dark text for better readability */
+}
+
+.topics-questions {
+    height: 80%;
+    max-width: 250px; /* Slightly wider for better legibility */
+    background-color: #f9f9f9; /* Light background for the sidebar */
+    padding: 20px;
+    border-radius: 8px; /* Rounded corners for a modern look */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.editor-output {
+    flex: 3; /* Give more space to the coding area */
+    display: flex;
+    flex-direction: column;
+}
+
+.CodeMirror { 
+    height: 40vh;
+    border: 1px solid #ddd; /* Light border for the editor */
+    border-radius: 8px; /* Rounded corners */
+    margin-bottom: 1px; /* Space between editor and console */
+    font-size: large;
+}
+
+.console {
+    height: 20vh;
+    background-color: #1e1e1e; /* Dark background for contrast */
+    color: #ddd; /* Light text for readability */
+    padding: 10px;
+    border-radius: 8px;
+    overflow-y: auto;
+    margin-top: 2px;
+    
+}
+
+#scoreBanner {
+    background-color: #28a745; /* Green background for the score banner */
+    color: white; /* White text color */
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-right: 10px; /* Adds some spacing between the score banner and the submit button */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Optional: adds a shadow for depth */
+}
+
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    color: white; /* White text for buttons */
+}
+
+.submit {
+    background-color: #007bff; /* Blue for submit button */
+}
+
+.topic-selection, .question-container {
+    margin-bottom: 20px;
+}
+
+.topic-selection label {
+    font-weight: 600; /* Make the label bold */
+    margin-bottom: 8px;
+    display: inline-block; /* Ensure margin takes effect */
+}
+
+#topicSelect {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
+}
+
+.question-container {
+    background-color: #ace9b1; /* Light blue background for questions */
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 5px solid #d361c4; /* Blue accent on the left */
+    margin-bottom: 10px; /* Space between questions */
+}
+
+
+</style>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.1.9/sweetalert2.all.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const editor = CodeMirror.fromTextArea(document.getElementById("codeInput"), {
+        mode: "text/x-python",
+        theme: "dracula",
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        showCursorWhenSelecting: true,
+        indentUnit: 4,
+        viewportMargin: Infinity,
+    });
+
+     // Initialize the score
+     let score = parseInt(document.getElementById('scoreBanner').textContent);
+     document.getElementById('scoreBanner').textContent = `Score: ${score}`; // Update the score display
+
+     const topics = {
+
+        control: [
+        { 
+            question: "Declare a variable 'age' and assign it a value greater than 18. Write an if statement to check if 'age' is greater than 18. If true, print 'You are an adult.'", 
+            expectedOutput: "You are an adult."
+        },
+        { 
+            question: "Create a variable 'temperature' and assign it a value greater than 30. Use an if-else statement to check if 'temperature' is greater than 30. If true, print 'It's hot outside.', otherwise print 'It's not too hot.'", 
+            expectedOutput: "It's hot outside."
+        },
+        { 
+            question: "Write a while loop to print numbers from 1 to 5.", 
+            expectedOutput: "1\n2\n3\n4\n5" 
+        },
+        { 
+            question: "Use a for loop to print 'Python' three times.", 
+            expectedOutput: "Python\nPython\nPython" 
+        },
+        { 
+            question: "Create a for loop that prints the squares of numbers 1 to 3.", 
+            expectedOutput: "1\n4\n9" 
+        },
+        { 
+            question: "Print 'Learning' four times using a loop. Include the loop count with each print statement (e.g., '1. Learning').", 
+            expectedOutput: "1. Learning\n2. Learning\n3. Learning\n4. Learning" 
+        },
+        { 
+            question: "Using a loop, concatenate 'Data' to itself five times and print the result.", 
+            expectedOutput: "DataDataDataDataData" 
+        },
+        { 
+            question: "Given a number, write an if-else statement to determine if it's positive, negative, or zero. Print the result accordingly.", 
+            expectedOutput: "Positive" 
+        },
+        { 
+            question: "Create a for loop to print even numbers between 1 and 10 (inclusive).", 
+            expectedOutput: "2\n4\n6\n8\n10" 
+        },
+        { 
+            question: "Use nested loops to print the following pattern:\n1\n1 2\n1 2 3\n1 2 3 4\n1 2 3 4 5", 
+            expectedOutput: "1\n1 2\n1 2 3\n1 2 3 4\n1 2 3 4 5" 
+        }
+    ],
+
+arrays: [
+{ 
+            question: "Create a list 'numbers' containing integers 1 to 5. Print the list.", 
+            expectedOutput: "[1, 2, 3, 4, 5]" 
+        },
+        { 
+            question: "Define a list 'fruits' with elements 'apple', 'banana', and 'cherry'. Print the list.", 
+            expectedOutput: "['apple', 'banana', 'cherry']" 
+        },
+        { 
+            question: "Initialize a list 'empty_list' with no elements. Print the list.", 
+            expectedOutput: "[]" 
+        },
+        { 
+            question: "Create a list 'mixed' containing integer, string, and float values. Print the list.", 
+            expectedOutput: "[1, 'apple', 3.14]" 
+        },
+        { 
+            question: "Define a list 'nested' with elements ['hello', [1, 2, 3], 'world']. Print the list.", 
+            expectedOutput: "['hello', [1, 2, 3], 'world']" 
+        },
+        { 
+            question: "Set a variable 'colors' to ['red', 'green', 'blue']. Print the list.", 
+            expectedOutput: "['red', 'green', 'blue']" 
+        },
+        { 
+            question: "Create a list 'repeated' containing the string 'hello' three times. Print the list.", 
+            expectedOutput: "['hello', 'hello', 'hello']" 
+        },
+        { 
+            question: "Initialize a list 'matrix' with nested lists representing a 2x2 matrix. Print the list.", 
+            expectedOutput: "[[1, 2], [3, 4]]" 
+        },
+        { 
+            question: "Define a list 'empty_matrix' containing two empty lists. Print the list.", 
+            expectedOutput: "[[], []]" 
+        },
+        { 
+            question: "Create a list 'indices' with elements 0, 1, 2, 3, and 4 using a range function. Print the list.", 
+            expectedOutput: "[0, 1, 2, 3, 4]" 
+        }
+    ],
+
+
+
+    data: [
+    { 
+            question: "Create a variable 'num' and assign it an integer value. Print the data type of 'num'.", 
+            expectedOutput: "int" 
+        },
+        { 
+            question: "Assign a string value 'text' to a variable. Print the data type of 'text'.", 
+            expectedOutput: "str" 
+        },
+        { 
+            question: "Create a list 'my_list' with elements ['apple', 'banana', 'cherry']. Print the data type of 'my_list'.", 
+            expectedOutput: "list" 
+        },
+        { 
+            question: "Define a dictionary 'my_dict' with key-value pairs {'name': 'John', 'age': 30}. Print the data type of 'my_dict'.", 
+            expectedOutput: "dict" 
+        },
+        { 
+            question: "Set a variable 'is_happy' to True. Print the data type of 'is_happy'.", 
+            expectedOutput: "bool" 
+        },
+        { 
+            question: "Assign a floating-point value 25.5 to a variable 'price'. Print the data type of 'price'.", 
+            expectedOutput: "float" 
+        },
+        { 
+            question: "Create a tuple 'my_tuple' with elements (1, 2, 3, 4, 5). Print the data type of 'my_tuple'.", 
+            expectedOutput: "tuple" 
+        },
+        { 
+            question: "Initialize a set 'my_set' with elements {1, 2, 3, 4, 5}. Print the data type of 'my_set'.", 
+            expectedOutput: "set" 
+        },
+        { 
+            question: "Define a variable 'age' with None value. Print the data type of 'age'.", 
+            expectedOutput: "NoneType" 
+        },
+        { 
+            question: "Create a complex number 'my_complex' with a real part 3 and an imaginary part 4j. Print the data type of 'my_complex'.", 
+            expectedOutput: "complex" 
+        }
+    
+    ],
+
+
+
+
+
+    };
+
+    let currentTopic = 'control';   
+    let currentIndex = 0;
+
+    function displayCurrentQuestion() {
+        const { question } = topics[currentTopic][currentIndex];
+        document.getElementById("questionContainer").textContent = question;
+    }
+
+    async function submitAnswer() {
+    const code = editor.getValue();
+    var formData = new FormData();
+    const { expectedOutput } = topics[currentTopic][currentIndex];
+    formData.append('code', code);
+    formData.append('points', '1');
+    formData.append('output', expectedOutput);
+
+    try {
+        const response = await fetch("/run_code/", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: formData
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+
+        // Display the result in the console box
+        const consoleBox = document.getElementById("consoleBox");
+        consoleBox.textContent = data.output;
+
+        
+        if (data.output.trim() === expectedOutput) {
+            score += 1; // Increment the score for a correct answer
+        document.getElementById('scoreBanner').textContent = `Score: ${score}`; // Update the score display
+        
+            Swal.fire('Correct!', 'Your answer is correct.', 'success').then(() => {
+                currentIndex = (currentIndex + 1) % topics[currentTopic].length;
+                if (currentIndex >= topics[currentTopic].length) {
+                    currentIndex = 0; // Optionally reset or handle completion differently
+                    Swal.fire('Completed!', 'You have completed all questions in this topic.', 'info');
+                }
+                displayCurrentQuestion();
+            });
+        } else {
+            Swal.fire('Incorrect', 'Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error', 'There was an issue running your code.', 'error');
+    }
+}
+
+
+
+    document.getElementById("topicSelect").addEventListener("change", (e) => {
+        currentTopic = e.target.value;
+        currentIndex = 0;
+        displayCurrentQuestion();
+    });
+
+    document.getElementById("submitButton").addEventListener("click", submitAnswer);
+
+    displayCurrentQuestion();
+});
+
+</script>
+{% endblock %}
+

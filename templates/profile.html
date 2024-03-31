@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="form-container">
+   <form id="passwordForm" method="post" action="{% url 'update_password' %}">
+      {% csrf_token %}
+      <p>Previous password</p>
+      <input type="password" name="old_pass" placeholder="Enter your old password" maxlength="20" class="box" required>
+      <p>New password</p>
+      <input type="password" name="new_pass" placeholder="Enter your new password" maxlength="20" class="box" required>
+      <p>Confirm password</p>
+      <input type="password" name="c_pass" placeholder="Confirm your new password" maxlength="20" class="box" required>
+      <input type="submit" value="Update password" name="submit" class="btn">
+      <a href="/logout" class="btn">Logout</a>
+      
+   </form>
+</section>
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+  document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        credentials: 'include', // Include cookies
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message); // "Password updated successfully"
+        } else {
+            alert(data.error); // Display error message
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+// Helper function to get a cookie value by name (for CSRF token)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+   </script>
+   {% endblock %}

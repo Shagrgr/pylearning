@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+
+
+<!-- <div class="hint">
+    {{ hint }}
+</div> -->
+
+<section id="puzzle-container" class="puzzle-container">
+    <div class="heading">
+        <div class="icon-container">
+            <img src="{% static 'images/b' %}{{ badge_level }}.png" alt="" class="badge-icon">
+            <div class="progress-bar-container">
+                <div class="progress-bar" data-progress="{{ progress_percentage }}"></div>
+            </div>
+            <span class="level-label">Level {{ badge_level }}</span>
+        </div>
+        <div class="timer-wrapper">
+            <div class="timer-content">
+                <h3>{{ topic|default:"Python" }}</h3>
+                <span class="timer-heading">Time Left:</span>
+                <div class="timer" id="quizTimer">01:00</div>
+            </div>
+        </div>
+    
+    
+    </div>
+    {% for index, snippet in snippets_with_indices %}
+<div class="snippet" data-index="{{ index }}" data-snippet-id="{{ forloop.counter }}">{{ snippet }}</div>
+{% endfor %}
+
+</section>
+<button id="check-solution" class="btn-check">Check Solution</button>
+{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+<style>
+
+.timer-wrapper {
+        text-align: center;
+        /* Ensures the flex container is centered */
+    }
+
+    .timer-content {
+        display: flex;
+        /* Enables flexbox layout */
+        align-items: center;
+        /* Vertically centers the flex items */
+        justify-content: center;
+        /* Horizontally centers the flex container's content */
+        gap: 10px;
+        /* Space between "Time Left" text and timer */
+    }
+
+    .timer-heading {
+        color: #333;
+        /* Professional dark grey */
+        font-size: 20px;
+        /* Sufficiently large, but adjust as needed */
+        font-weight: bold;
+        /* Adjust based on your design preference */
+    }
+
+    .timer {
+        display: inline-flex;
+        /* Allows the timer to be flex item */
+        align-items: center;
+        /* Center content of timer vertically */
+        justify-content: center;
+        /* Center content of timer horizontally */
+        background-color: #ff3d00;
+        /* Alarming red */
+        color: #ffffff;
+        /* White text for contrast */
+        padding: 10px 20px;
+        /* Ample padding */
+        border-radius: 25px;
+        /* Pill shape */
+        font-size: 17px;
+        /* Large, readable text */
+        font-weight: bold;
+        /* Make it pop */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        /* Soft shadow for depth */
+    }
+
+    /* Blinking effect */
+    @keyframes blink {
+        50% {
+            background-color: #ff6161;
+            /* Lighter red for the blink */
+        }
+    }
+
+    .timer.blink {
+        animation: blink 1s infinite;
+        /* Apply blinking animation */
+    }
+.icon-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .badge-icon {
+        width: 110px;
+        /* Adjust based on actual size */
+        height: 110px;
+        /* Adjust based on actual size */
+        
+    }
+
+    .progress-bar-container {
+        flex-grow: 1;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        margin: 0 10px;
+        /* Spacing around progress bar */
+        height: 20px;
+        /* Height of the progress bar */
+    }
+
+    .progress-bar {
+        background-color: #4caf50;
+        /* Color of the progress */
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .level-label {
+        margin-left: 10px;
+        /* Spacing between progress bar and label */
+    }
+.puzzle-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 90%; /* Adjusted for responsiveness */
+    margin: 10px auto;
+    border: 2px solid #0288d1;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #fafafa;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.snippet {
+    margin: 10px 0;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: grab;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.snippet:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn-check {
+    display: block;
+    width: 150px; /* Smaller width for the button */
+    margin: 20px auto;
+    padding: 8px 0; /* Reduced padding for a smaller button */
+    font-size: 16px; /* Adjusted font size */
+    font-weight: 500;
+    color: #fff;
+    background-color: #0288d1;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-check:hover {
+    background-color: #0277bd;
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .puzzle-container {
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .snippet {
+        padding: 10px;
+    }
+
+    .btn-check {
+        width: 120px; /* Even smaller in very narrow views */
+        padding: 8px 0;
+        font-size: 14px;
+    }
+}
+
+.hint {
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9; /* Light grey background for subtlety */
+    border-left: 5px solid #007bff; /* A blue accent line on the left */
+    border-right: 5px solid #007bff; /* A blue accent line on the left */
+    color: #333; /* Dark grey text for readability */
+    font-size: 16px;
+    font-style: italic; /* A touch of style */
+    border-radius: 4px; /* Soften the edges */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Slight shadow for depth */
+    text-align: center; /* Center-align the hint text */
+}
+
+/* Optional: Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .hint {
+        font-size: 14px; /* Slightly smaller font size on small screens */
+        padding: 8px 15px; /* Adjust padding for smaller screens */
+        margin-bottom: 15px; /* Reduce margin on smaller screens */
+    }
+}
+
+
+</style>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let progressBar = document.querySelector('.progress-bar');
+    let progress = progressBar.getAttribute('data-progress');
+    progressBar.style.width = progress + '%';
+$(document).ready(function() {
+    
+    
+    $("#puzzle-container").sortable({
+        placeholder: "snippet-highlight"
+    });
+    $("#puzzle-container").disableSelection();
+
+    $("#check-solution").click(function() {
+    var snippets = $(".snippet");
+    var isCorrect = true;
+    var lastIndex = -1;
+
+    snippets.each(function() {
+        var index = parseInt($(this).data("index"));
+        if (index < lastIndex) {
+            isCorrect = false;
+            return false; // Break out of the loop
+        }
+        lastIndex = index;
+    });
+
+    if (isCorrect) {
+        // Use SweetAlert for a beautiful alert
+        Swal.fire({
+            title: 'Well done',
+            text: 'Correct!',
+            icon: 'success',
+            confirmButtonText: 'Next Puzzle',
+            didClose: function() {
+                submitScore(2);
+                window.location.reload(); // Redirect to the provided URL by the server if needed
+            }
+        });
+    } else {
+        // Use SweetAlert for the incorrect case as well, optional
+        Swal.fire({
+            title: 'Incorrect',
+            text: 'Try again!',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+    });
+
+    function submitScore(points) {
+            fetch('/game/', { // 'game/' is the URL pattern for the Quize view
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Function to get CSRF token from cookies
+                },
+                body: JSON.stringify({ points: points })
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // Redirect to the provided URL by the server if needed
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+});
+
+const startTime = 60; // Timer start time in seconds
+let timerElement = document.getElementById('quizTimer');
+
+function startTimer(duration, display) {
+    var timer = duration, minutes, seconds;
+    var interval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (timer < 10) {
+            display.classList.add('blink'); // Make the timer blink when 10 seconds are left
+        }
+
+        if (--timer < 0) {
+            clearInterval(interval);
+            display.classList.remove('blink');
+            // After the timer ends, show SweetAlert and then refresh the page
+            Swal.fire({
+                title: 'Time over!',
+                text: 'Try the next puzzle.',
+                icon: 'info',
+                confirmButtonText: 'Ok'
+            }).then((result) => {
+                if (result.value) {
+                    location.reload(); // Refreshes the page
+                }
+            });
+        }
+    }, 1000);
+}
+
+// Start the timer as soon as the page loads
+window.onload = function () {
+    startTimer(startTime, timerElement);
+};
+
+
+
+
+</script>
+{% endblock %}

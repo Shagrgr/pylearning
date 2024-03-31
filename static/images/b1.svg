@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg height="80px" width="80px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 511.984 511.984" xml:space="preserve">
+            <polygon style="fill:#79A8D9;" points="511.984,255.992 473.188,197.791 477.688,127.996 414.987,96.981 383.988,34.296 314.193,38.795 255.992,0 197.806,38.795 127.996,34.296 96.997,96.981 34.31,127.996 38.81,197.791 0,255.992 38.81,314.178 34.31,383.988 96.997,414.987 127.996,477.674 197.806,473.174 255.992,511.984 314.193,473.174 383.988,477.674 415.003,414.987 477.688,383.988 473.188,314.178 "/>
+            <!-- New text element for "Nobe" -->
+            <text x="50%" y="50%" text-anchor="middle" fill="#F5F7FA" font-size="130" font-family="Arial" dominant-baseline="central">Nobe</text>
+        </svg>

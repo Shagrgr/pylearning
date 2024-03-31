@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<section class="leaderboard-container">
+    <div class="leaderboard">
+        <div class="leaderboard-header">
+            <span class="username">Username</span>
+            <span class="score">Score</span>
+            <span class="rank">Rank</span>
+            <span class="last-update">Last Update</span>
+        </div>
+        {% for profile in profiles %}
+        <div class="leaderboard-entry {% if profile.is_current_user %}current-user{% endif %}">
+            <span class="username">{{ profile.user.username }}</span>
+            <span class="score">{{ profile.score }}</span>
+            <span class="rank">{{ forloop.counter }}</span>
+            <span class="last-update">{{ profile.last_score_update|date:"Y-m-d H:i" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+{% block extrastyle %}
+<style>
+/* General styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+.leaderboard-container {
+    max-width: 960px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-header, .leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.leaderboard-header {
+    background-color: #6c7ae0; /* Light purple */
+    color: #ffffff;
+    font-size: 18px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.leaderboard-entry {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s;
+}
+
+.leaderboard-entry:hover {
+    background-color: #f9f9f9;
+}
+
+.current-user {
+    background-color: #e2e2e2; /* Light grey to highlight current user */
+}
+
+.username, .score, .rank, .last-update {
+    text-align: center;
+    flex: 1;
+}
+
+.username {
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .leaderboard-header span, .leaderboard-entry span {
+        font-size: 14px;
+    }
+    .leaderboard-container {
+        margin: 20px;
+    }
+}
+</style>
+{% endblock %}

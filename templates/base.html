@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PythoNexus{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    
+
+</head>
+
+<body>
+    <header class="header">
+
+        <section class="flex">
+            <a href="/home">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="{% static 'images/logo.jpeg' %}" alt="PythoNexus Logo" style="height: 60px; border-radius: 15%; object-fit: cover;">
+                    <span style="font-size: 24px; margin-left: 10px;">PythoNexus</span>
+                </div>
+            </a>
+            <div class="icons">
+                <div id="menu-btn" class="fas fa-bars"></div>
+                <div id="search-btn" class="fas fa-search" style="display: none;"></div>
+                <div id="user-btn" class="fas fa-user" style="display: none;"></div>
+
+                <div id="toggle-btn" class="fas fa-sun"></div>
+            </div>
+
+            <!-- <div class="profile">
+                <img src="{% static 'images/pic-6.jpg' %}" class="image" alt="">
+                <h3 class="name">{{ user.get_full_name|default:user.username }}</h3>
+                 <p class="role">Student</p> -->
+                <!-- <a href="profile.html" class="btn">view profile</a>
+                <div class="flex-btn">
+                    <a href="/" class="option-btn">Logout</a>
+                </div>
+            </div>  -->
+
+        </section>
+
+    </header>
+
+    <div class="side-bar">
+
+        <div id="close-btn">
+            <i class="fas fa-times"></i>
+        </div>
+
+        <div class="profile">
+            <!-- <h3 class="name">{{ user.get_full_name|default:user.username }}</h3> -->
+            <!-- <p class="role">Student</p> -->
+            <a href="/profile/" class="btn">{{ user.get_full_name|default:user.username }}
+                
+                <img src="{% static 'images/pic-6.jpg' %}" class="image" alt="">
+                
+            </a>
+        </div>
+
+        <nav class="navbar">
+            <a href="/home/"><i class="fas fa-home"></i><span>Home</span></a>
+            <a href="{% url 'quize' name='Python' %}"><i class="fas fa-question"></i><span>Quiz</span></a>
+            <a href="/game/"><i class="fas fa-gamepad"></i><span>Play Game</span></a>
+            <a href="/board/"><i class="fas fa-trophy"></i><span>Leader Board</span></a>
+            <a href="/run_code/"><i class="fas fa-code"></i><span>Code</span></a>
+            <a href="/chat/"><i class="fas fa-comment"></i><span>chat</span></a>
+           
+        </nav>
+
+    </div>
+
+    {% block content %}
+    <!-- This block will be overridden by child templates -->
+    {% endblock %}
+
+    {% block extrastyle %}
+    <!-- page specific styling -->
+    {% endblock %}
+    <!-- page specific js -->
+    {% block extrajs %}
+
+    {% endblock %}
+    <script src="{% static 'script.js' %}"></script>
+
+</body>
+
+</html>

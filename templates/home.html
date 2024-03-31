@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="courses">
+   <h1 class="heading">Topics</h1>
+   <div class="box-container">
+
+      <div class="box">
+         <div class="thumb">
+            <img src="{% static 'images/t1.webp' %}" alt="">
+            <span>Control Structures</span>
+         </div>
+         <p class="title">Waht is If, Else, While, and For Loops in Puthon?</p>
+         <a href="{% url 'explanation' name='Control Structures' %}" class="inline-btn">Start Learning</a>
+      </div>
+      
+      <div class="box">
+         <div class="thumb">
+            <img src="{% static 'images/t2.webp' %}" alt="">
+            <span>Arrays</span>
+         </div>
+         <p class="title">Waht is Arrays and how to use in Puthon?</p>
+         <a href="{% url 'explanation' name='Arrays' %}" class="inline-btn">Start Learning</a>
+      </div>
+      <div class="box">
+         <div class="thumb">
+            <img src="{% static 'images/t3.webp' %}" alt="">
+
+            <span>Inheritance</span>
+         </div>
+         <p class="title">Waht is Inheritance and how to use in Python?</p>
+         <a href="{% url 'explanation' name='Inheritance' %}" class="inline-btn">Start Learning</a>
+      </div>
+      <div class="box">
+         <div class="thumb">
+            <img src="{% static 'images/t4.webp' %}" alt="">
+            <span>Data Types</span>
+         </div>
+         <p class="title">Waht is DataTypes and how to use in Puthon?</p>
+         <a href="{% url 'explanation' name='Data Types' %}" class="inline-btn">Start Learning</a>
+      </div>
+   </div>
+   
+</section>
+
+{% endblock %}

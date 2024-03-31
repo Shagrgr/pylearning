@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="courses">
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-button active" onclick="changeTab('full')">Full Explanation</button>
+            <button class="tab-button" onclick="changeTab('brief')">Brief Explanation</button>
+            <button class="tab-button" onclick="changeTab('summary')">Summary</button>
+            
+            <button class="tab-button" onclick="goToGame()">Game</button>
+            <button class="tab-button" onclick="goToQuiz()">Quiz</button>
+            <input id="topic" type="hidden" value="{{ topic }}">
+        </div>
+        <div class="content-display">
+            <div id="full" class="tab-content active">{{ content.full|safe }}</div>
+            <div id="brief" class="tab-content">{{ content.brief|safe }}</div>
+            <div id="summary" class="tab-content">{{ content.summary|safe }}</div>
+        </div>
+    </div>
+    <div class="notes-window">
+        {% csrf_token %}
+        <h2>Notes</h2>
+        <textarea id="noteInput" placeholder="Jot down your notes..."></textarea>
+        <button class="small-btn buttonsv" onclick="saveNote()">Save</button>
+        <div class="saved-notes" id="savedNotes">
+            <h3>Saved Notes</h3>
+            {% for note in notes %}
+            <div class="note-item" id="note-{{ note.id }}">
+                <span>{{ note.content }}</span>
+                <button class="small" onclick="deleteNote('{{ note.id }}')">
+                    <i class="fas fa-trash-alt" style="color: red;"></i>
+                  </button>
+                  
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extrastyle %}
+<style>
+   
+
+.courses {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px;
+}
+
+.content, .notes-window {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 5px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 10px 15px;
+    background-color: #e7e7e7; /* Neutral, professional color */
+    color: #333;
+    border: 2px solid transparent; /* Prepare for active state */
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.tab-button:hover {
+    background-color: #d7d7d7; /* Slightly darker on hover for feedback */
+}
+
+.tab-button.active {
+    background-color: #007bff; /* Active tab color */
+    color: white; /* Active tab text color */
+    border-color: #007bff; /* Highlight active tab */
+}
+
+.tab-content {
+    display: none;
+    /* Styles for your tab content */
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd; /* Slight border for the content */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.tab-content.active {
+    display: block;
+}
+
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.buttonsv {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.saved-notes {
+    margin-top: 20px;
+    padding: 10px;
+    background: #ffffff; /* Light background for the notes container */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Soft shadow for depth */
+}
+
+.note-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f9f9f9; /* Slightly off-white for the notes themselves */
+    border: 1px solid #eaeaea; /* Subtle border */
+    border-radius: 5px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.note-item:hover {
+    background-color: #eef; /* Slight hover effect for interactivity */
+}
+
+.note-item span {
+    flex-grow: 1;
+    margin-right: 10px;
+    word-break: break-word; /* Ensure long words do not overflow */
+}
+
+.note-item .btn-delete-note {
+    color: #dc3545; /* Use a standard delete color for contrast */
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.note-item .btn-delete-note:hover {
+    color: #c82333; /* Darker shade on hover */
+}
+
+.note-item .btn-delete-note i {
+    font-size: 1.2rem; /* Adjust icon size for better visibility */
+}
+
+.content h2 {
+                    color: #333;
+                }
+                .content h3 {
+                    color: #666;
+                }
+                .content p {
+                    line-height: 1.6;
+                }
+                .content ul {
+                    list-style-type: disc;
+                    padding-left: 20px;
+                }
+                .content pre {
+                    background-color: #eee;
+                    padding: 10px;
+                    border-radius: 5px;
+                    overflow-x: auto;
+                }
+                .content code {
+                    color: #c7254e;
+                }
+
+/* Additional styling for h2, h3, p, ul, pre, and code elements remains as you initially set, ensuring text is styled consistently and readability is maintained. */
+
+</style>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+function changeTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.querySelector(`[onclick="changeTab('${tabId}')"]`).classList.add('active');
+}
+
+function saveNote() {
+    const noteInput = document.getElementById('noteInput');
+    const topic = document.getElementById('topic').value;
+    const data = { content: noteInput.value, topic: topic };
+
+    fetch('/save_note/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const savedNotes = document.getElementById('savedNotes');
+            const noteDiv = document.createElement('div');
+            noteDiv.classList.add('note-item');
+            noteDiv.innerHTML = `
+    <p>${noteInput.value}</p>
+    <button style="color: green;" onclick="deleteNote(${data.note_id})">
+        <i class="fas fa-trash-alt"></i>
+    </button>
+`;
+
+savedNotes.insertBefore(noteDiv, savedNotes.firstChild);
+
+            noteInput.value = ''; // Clear input after saving
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteNote(noteId) {
+    fetch(`/delete_note/${noteId}/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': csrftoken,
+
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const noteElement = document.getElementById(`note-${noteId}`);
+            noteElement.remove();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+document.addEventListener('DOMContentLoaded', () => changeTab('full')); // Default to full tab on load
+function goToGame() {
+    window.location.href = `/gameTopic/${document.getElementById("topic").value}`;
+    //alert(document.getElementById("topic").value)
+}
+function goToQuiz() {
+    window.location.href = `/quize/${document.getElementById("topic").value}`;
+    //alert(document.getElementById("topic").value)
+}
+</script>
+{% endblock %}
+

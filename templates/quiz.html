@@ -1,0 +1,1216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<section class="courses">
+
+    <div class="heading">
+        <div class="icon-container">
+            <img src="{% static 'images/b' %}{{ badge_level }}.png" alt="" class="badge-icon">
+            <div class="progress-bar-container">
+                <div class="progress-bar" data-progress="{{ progress_percentage }}"></div>
+            </div>
+            <span class="level-label">Level {{ badge_level }}</span>
+        </div>
+        <div class="timer-wrapper">
+            <div class="timer-content">
+                <h3 id="topic">{{ topic|default:"Python" }}</h3>
+                <span class="timer-heading">Time Left:</span>
+                <div class="timer" id="quizTimer">01:00</div>
+                
+            </div>
+        </div>
+
+
+    </div>
+    <div class="quiz-container">
+        <div class="question-section">
+            <div id="question"></div>
+            <ul id="options"></ul>
+        </div>
+        <div class="status-section">
+            <div id="statusCircles">
+                <!-- Numbered circles -->
+                <div class="circle" data-index="1">1</div>
+                <div class="circle" data-index="2">2</div>
+                <div class="circle" data-index="3">3</div>
+                <div class="circle" data-index="4">4</div>
+                <div class="circle" data-index="5">5</div>
+                <div class="circle" data-index="6">6</div>
+                <div class="circle" data-index="7">7</div>
+                <div class="circle" data-index="8">8</div>
+                <div class="circle" data-index="9">9</div>
+                <div class="circle" data-index="10">10</div>
+            </div>
+            <button id="hintBtn">Hint</button>
+            <div id="hintBox" class="hint-box"></div>
+        </div>
+    </div>
+    <div class="navigation-buttons">
+        <button id="nextBtn">Next Question</button>
+        <button id="restartBtn">Restart Quiz</button>
+    </div>
+</section>
+{% endblock %}
+
+
+
+{% block extrastyle %}
+<style>
+    .timer-wrapper {
+        text-align: center;
+        /* Ensures the flex container is centered */
+    }
+
+    .timer-content {
+        display: flex;
+        /* Enables flexbox layout */
+        align-items: center;
+        /* Vertically centers the flex items */
+        justify-content: center;
+        /* Horizontally centers the flex container's content */
+        gap: 10px;
+        /* Space between "Time Left" text and timer */
+    }
+
+    .timer-heading {
+        color: #333;
+        /* Professional dark grey */
+        font-size: 20px;
+        /* Sufficiently large, but adjust as needed */
+        font-weight: bold;
+        /* Adjust based on your design preference */
+    }
+
+    .timer {
+        display: inline-flex;
+        /* Allows the timer to be flex item */
+        align-items: center;
+        /* Center content of timer vertically */
+        justify-content: center;
+        /* Center content of timer horizontally */
+        background-color: #ff3d00;
+        /* Alarming red */
+        color: #ffffff;
+        /* White text for contrast */
+        padding: 10px 20px;
+        /* Ample padding */
+        border-radius: 25px;
+        /* Pill shape */
+        font-size: 17px;
+        /* Large, readable text */
+        font-weight: bold;
+        /* Make it pop */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        /* Soft shadow for depth */
+    }
+
+    /* Blinking effect */
+    @keyframes blink {
+        50% {
+            background-color: #ff6161;
+            /* Lighter red for the blink */
+        }
+    }
+
+    .timer.blink {
+        animation: blink 1s infinite;
+        /* Apply blinking animation */
+    }
+
+
+
+    .icon-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .badge-icon {
+        width: 110px;
+        /* Adjust based on actual size */
+        height: 110px;
+        /* Adjust based on actual size */
+    }
+
+    .progress-bar-container {
+        flex-grow: 1;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        margin: 0 10px;
+        /* Spacing around progress bar */
+        height: 20px;
+        /* Height of the progress bar */
+    }
+
+    .progress-bar {
+        background-color: #4caf50;
+        /* Color of the progress */
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .level-label {
+        margin-left: 10px;
+        /* Spacing between progress bar and label */
+    }
+
+    .quiz-container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 40px;
+        max-width: 900px;
+        width: 100%;
+        gap: 40px;
+    }
+
+    .question-section {
+        flex: 3;
+        padding-right: 20px;
+        /* Added padding for separation */
+    }
+
+    .status-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #question {
+        font-size: 24px;
+        /* Increase the font size for better visibility */
+        font-weight: bold;
+        /* Make the text bold for emphasis */
+        color: #333;
+        /* A darker shade for improved readability */
+        margin-bottom: 20px;
+        /* Add some space below the question for separation */
+        line-height: 1.4;
+        /* Improve line spacing for multi-line questions */
+        font-family: 'Segoe UI', 'Roboto', sans-serif;
+        /* Professional, clean font family */
+    }
+
+
+    #options li {
+        cursor: pointer;
+        list-style-type: none;
+        padding: 10px 15px;
+        margin: 10px 0;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        border-left: 4px solid #ffffff;
+        /* Subtle style for unselected */
+        transition: all 0.3s ease-in-out;
+    }
+
+    #options li.selected {
+        background-color: #e2f4ea;
+        border-left: 4px solid #4CAF50;
+        /* Highlight for selected option */
+        color: #333;
+    }
+
+    #options li:hover {
+        background-color: #f0f0f0;
+    }
+
+    .circle {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #999;
+        margin: 2px;
+        text-align: center;
+        line-height: 26px;
+        user-select: none;
+    }
+
+    .hint-box {
+        background-color: #fbfbfb;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 8px;
+        border: 1px solid #dcdcdc;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .navigation-buttons button,
+    #hintBtn {
+        padding: 10px 25px;
+        margin-top: 20px;
+        border: none;
+        background-color: #8e44ad;
+        color: white;
+        border-radius: 20px;
+        /* Rounded corners for buttons */
+        cursor: pointer;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: transform 0.2s ease, background-color 0.3s;
+    }
+
+    .navigation-buttons button:hover,
+    #hintBtn:hover {
+        background-color: #d078f6;
+        transform: translateY(-2px);
+        /* Subtle hover effect */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-label {
+        font-size: 18px;
+        margin-top: 20px;
+        font-weight: bold;
+        color: #4CAF50;
+        /* Color theme for results for consistency */
+    }
+</style>
+{% endblock %}
+
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    // Helper function to get CSRF token
+    function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function () {
+    // Initialize variables
+    const startTime = 60; // Timer start time in seconds
+    let timerStarted = false; // Flag to check if timer has started
+    let timerElement = document.getElementById('quizTimer');
+    let progressBar = document.querySelector('.progress-bar');
+    let progress = progressBar.getAttribute('data-progress');
+    progressBar.style.width = progress + '%';
+    
+    const questionsPython = [
+    { question: "What is the result of the expression 2 + 3 in Python?", options: ["5", "23", "Error", "None"], correctOption: 0, hint: "This question tests basic arithmetic operations." },
+    { question: "Which symbol is used for division in Python?", options: ["/", "%", "*", "-"], correctOption: 0, hint: "This is a fundamental mathematical operation in Python." },
+    { question: "How do you display a value in Python?", options: ["echo", "print()", "console.log()", "return"], correctOption: 1, hint: "This function is used to output data in Python programs." },
+    { question: "Is Python case-sensitive?", options: ["True", "False"], correctOption: 0, hint: "Consider how Python treats variable names and keywords." },
+    { question: "What symbol is used to indicate a comment in Python?", options: ["//", "#", "<!-- -->", "/* */"], correctOption: 1, hint: "This symbol is used for single-line comments in Python." },
+    { question: "Which of the following is a valid Python data type?", options: ["String", "integer", "Boolean", "All of the above"], correctOption: 3, hint: "Python supports various data types for different purposes." },
+    { question: "How do you create an empty list in Python?", options: ["[]", "{}", "()", "None"], correctOption: 0, hint: "Lists are created using a specific syntax in Python." },
+    { question: "Which keyword is used to define a loop in Python?", options: ["loop", "for", "repeat", "while"], correctOption: 1, hint: "This keyword is used for iterating over a sequence of items." },
+    { question: "How do you check for equality in Python?", options: ["=", "==", "===", "equals"], correctOption: 1, hint: "This operator is used to compare two values for equality." },
+    { question: "Which keyword is used to define a function in Python?", options: ["func", "def", "function", "method"], correctOption: 1, hint: "This keyword is followed by the function name and parameters." }
+    ,{ 
+        question: "What does the 'if' statement in Python do?",
+        options: [
+            "Iterates over a sequence",
+            "Executes a block of code if a condition is true",
+            "Repeats a block of code until a condition becomes false",
+            "Executes a block of code if a condition is false"
+        ],
+        correctOption: 1,
+        hint: "The 'if' statement in Python executes a block of code if a condition is true."
+    },
+    { 
+        question: "Which statement is used to handle alternate conditions in Python?",
+        options: [
+            "if",
+            "else",
+            "while",
+            "for"
+        ],
+        correctOption: 1,
+        hint: "The 'else' statement in Python is used to handle alternate conditions."
+    },
+    { 
+        question: "What happens if no condition in an 'if' statement evaluates to true?",
+        options: [
+            "The program terminates",
+            "The program skips the 'if' statement and proceeds with the next line of code",
+            "An error is raised",
+            "The program executes the 'else' block, if present"
+        ],
+        correctOption: 1,
+        hint: "If no condition in an 'if' statement evaluates to true, the program skips the 'if' statement and proceeds with the next line of code."
+    },
+    { 
+        question: "Which loop is preferred when the number of iterations is known or fixed?",
+        options: [
+            "if loop",
+            "while loop",
+            "for loop",
+            "else loop"
+        ],
+        correctOption: 2,
+        hint: "The 'for' loop in Python is preferred when the number of iterations is known or fixed."
+    },
+    { 
+        question: "What happens when you try to insert an element of a different data type into a Python array?",
+        options: [
+            "Python automatically converts the data type of the element",
+            "An error occurs",
+            "The element is inserted successfully",
+            "The element is appended to the end of the array"
+        ],
+        correctOption: 1,
+        hint: "An error occurs when you try to insert an element of a different data type into a Python array."
+    },
+];
+
+
+const questionsPythonArrays = [
+    { 
+        question: "What is the purpose of Python arrays?",
+        options: [
+            "To store heterogeneous data",
+            "To store collections of elements of the same data type",
+            "To perform string operations",
+            "To implement recursive functions"
+        ],
+        correctOption: 1,
+        hint: "Python arrays are designed to store collections of elements of the same data type."
+    },
+    { 
+        question: "How are arrays created in Python?",
+        options: [
+            "Using the list keyword",
+            "Using the array module from the array package",
+            "Using the dict keyword",
+            "Using the set keyword"
+        ],
+        correctOption: 1,
+        hint: "In Python, arrays are typically created using the array module from the array package."
+    },
+    { 
+        question: "Which of the following typecodes represents integers in Python arrays?",
+        options: [
+            "'i'",
+            "'f'",
+            "'d'",
+            "'b'"
+        ],
+        correctOption: 0,
+        hint: "The typecode 'i' is used to represent integers in Python arrays."
+    },
+    { 
+        question: "What type of elements can be stored in a Python array?",
+        options: [
+            "Elements of any data type",
+            "Elements of different data types",
+            "Elements of the same data type",
+            "Elements of numeric data types only"
+        ],
+        correctOption: 2,
+        hint: "Python arrays are designed to store elements of the same data type."
+    },
+    { 
+        question: "How are elements accessed in a Python array?",
+        options: [
+            "Using the get() method",
+            "Using index notation",
+            "Using the find() method",
+            "Using the search() method"
+        ],
+        correctOption: 1,
+        hint: "Elements in a Python array are accessed using index notation."
+    },
+    { 
+        question: "Which operation is NOT supported by Python arrays?",
+        options: [
+            "Insertion",
+            "Deletion",
+            "Concatenation of arrays",
+            "Splitting arrays"
+        ],
+        correctOption: 3,
+        hint: "Python arrays do not support splitting arrays."
+    },
+    { 
+        question: "What is the memory efficiency advantage of Python arrays over lists?",
+        options: [
+            "Arrays can hold elements of different data types",
+            "Arrays use contiguous memory locations",
+            "Arrays support dynamic resizing",
+            "Arrays provide built-in sorting algorithms"
+        ],
+        correctOption: 1,
+        hint: "Python arrays use contiguous memory locations, leading to better memory efficiency compared to lists."
+    },
+    { 
+        question: "What is the default behavior of the insert() method in Python arrays?",
+        options: [
+            "Inserts an element at the beginning of the array",
+            "Inserts an element at the end of the array",
+            "Inserts an element at a specified index",
+            "Inserts an element randomly in the array"
+        ],
+        correctOption: 2,
+        hint: "The insert() method in Python arrays inserts an element at a specified index by default."
+    },
+    { 
+        question: "Which method is used to remove an element from a Python array by value?",
+        options: [
+            "pop()",
+            "delete()",
+            "remove()",
+            "discard()"
+        ],
+        correctOption: 2,
+        hint: "The remove() method is used to remove an element from a Python array by value."
+    },
+    { 
+        question: "What is the purpose of typecodes in Python arrays?",
+        options: [
+            "They specify the size of the array",
+            "They represent the index of elements in the array",
+            "They determine the data type of elements in the array",
+            "They control the order of elements in the array"
+        ],
+        correctOption: 2,
+        hint: "Typecodes in Python arrays determine the data type of elements stored in the array."
+    },
+    { 
+        question: "Which operation is used to combine two arrays into a single array in Python?",
+        options: [
+            "merge()",
+            "concatenate()",
+            "join()",
+            "+ operator"
+        ],
+        correctOption: 3,
+        hint: "In Python, the + operator is used to combine two arrays into a single array."
+    },
+    { 
+        question: "Which of the following is a common use case for Python arrays?",
+        options: [
+            "Storing heterogeneous data",
+            "Implementing linked lists",
+            "Numerical computations and scientific computing",
+            "Text processing and manipulation"
+        ],
+        correctOption: 2,
+        hint: "Python arrays are commonly used for numerical computations and scientific computing."
+    },
+    { 
+        question: "What happens when you try to insert an element of a different data type into a Python array?",
+        options: [
+            "Python automatically converts the data type of the element",
+            "An error occurs",
+            "The element is inserted successfully",
+            "The element is appended to the end of the array"
+        ],
+        correctOption: 1,
+        hint: "An error occurs when you try to insert an element of a different data type into a Python array."
+    },
+    { 
+        question: "Which method is used to find the length of a Python array?",
+        options: [
+            "size()",
+            "length()",
+            "len()",
+            "count()"
+        ],
+        correctOption: 2,
+        hint: "The len() method is used to find the length of a Python array."
+    },
+    { 
+        question: "In Python arrays, what does the term 'homogeneous elements' refer to?",
+        options: [
+            "Elements of different data types",
+            "Elements of the same data type",
+            "Elements with unique values",
+            "Elements sorted in ascending order"
+        ],
+        correctOption: 1,
+        hint: "In Python arrays, 'homogeneous elements' refer to elements of the same data type."
+    }
+];
+
+
+const questionsControlStructures = [
+    { 
+        question: "What does the 'if' statement in Python do?",
+        options: [
+            "Iterates over a sequence",
+            "Executes a block of code if a condition is true",
+            "Repeats a block of code until a condition becomes false",
+            "Executes a block of code if a condition is false"
+        ],
+        correctOption: 1,
+        hint: "The 'if' statement in Python executes a block of code if a condition is true."
+    },
+    { 
+        question: "Which statement is used to handle alternate conditions in Python?",
+        options: [
+            "if",
+            "else",
+            "while",
+            "for"
+        ],
+        correctOption: 1,
+        hint: "The 'else' statement in Python is used to handle alternate conditions."
+    },
+    { 
+        question: "What happens if no condition in an 'if' statement evaluates to true?",
+        options: [
+            "The program terminates",
+            "The program skips the 'if' statement and proceeds with the next line of code",
+            "An error is raised",
+            "The program executes the 'else' block, if present"
+        ],
+        correctOption: 1,
+        hint: "If no condition in an 'if' statement evaluates to true, the program skips the 'if' statement and proceeds with the next line of code."
+    },
+    { 
+        question: "Which loop is preferred when the number of iterations is known or fixed?",
+        options: [
+            "if loop",
+            "while loop",
+            "for loop",
+            "else loop"
+        ],
+        correctOption: 2,
+        hint: "The 'for' loop in Python is preferred when the number of iterations is known or fixed."
+    },
+    { 
+        question: "What is the main purpose of the 'while' loop in Python?",
+        options: [
+            "To execute a block of code if a condition is true",
+            "To handle alternate conditions",
+            "To repeat a block of code until a condition becomes false",
+            "To iterate over a sequence"
+        ],
+        correctOption: 2,
+        hint: "The main purpose of the 'while' loop in Python is to repeat a block of code until a condition becomes false."
+    },
+    { 
+        question: "What happens if the condition in a 'while' loop is never false?",
+        options: [
+            "The loop executes indefinitely (infinite loop)",
+            "The loop terminates immediately",
+            "An error is raised",
+            "The loop skips to the next iteration"
+        ],
+        correctOption: 0,
+        hint: "If the condition in a 'while' loop is never false, the loop executes indefinitely, resulting in an infinite loop."
+    },
+    { 
+        question: "Which loop is suitable for situations where the number of iterations is uncertain?",
+        options: [
+            "if loop",
+            "while loop",
+            "for loop",
+            "else loop"
+        ],
+        correctOption: 1,
+        hint: "The 'while' loop in Python is suitable for situations where the number of iterations is uncertain."
+    },
+    { 
+        question: "What is the primary use of 'elif' in Python?",
+        options: [
+            "To handle alternative conditions sequentially",
+            "To define a new variable",
+            "To exit a loop",
+            "To append elements to a list"
+        ],
+        correctOption: 0,
+        hint: "The primary use of 'elif' in Python is to handle alternative conditions sequentially."
+    },
+    { 
+        question: "How do you exit a loop prematurely in Python?",
+        options: [
+            "Use the 'stop' keyword",
+            "Use the 'break' statement",
+            "Use the 'exit' function",
+            "Use the 'end' keyword"
+        ],
+        correctOption: 1,
+        hint: "You can exit a loop prematurely in Python using the 'break' statement."
+    },
+    { 
+        question: "What is the primary purpose of indentation in Python?",
+        options: [
+            "To increase code readability",
+            "To save memory",
+            "To improve execution speed",
+            "To avoid syntax errors"
+        ],
+        correctOption: 0,
+        hint: "The primary purpose of indentation in Python is to increase code readability."
+    },
+    { 
+        question: "Which statement is used to skip the rest of the current iteration and continue with the next iteration in a loop?",
+        options: [
+            "skip",
+            "continue",
+            "pass",
+            "next"
+        ],
+        correctOption: 1,
+        hint: "The 'continue' statement in Python is used to skip the rest of the current iteration and continue with the next iteration in a loop."
+    },
+    { 
+        question: "Which loop construct in Python supports nested loops?",
+        options: [
+            "if loop",
+            "while loop",
+            "for loop",
+            "else loop"
+        ],
+        correctOption: 2,
+        hint: "The 'for' loop construct in Python supports nested loops."
+    },
+    { 
+        question: "What is the correct syntax for a 'for' loop in Python?",
+        options: [
+            "for i in range(5)",
+            "for i in [1, 2, 3, 4, 5]",
+            "for i in 5",
+            "for i in {1, 2, 3, 4, 5}"
+        ],
+        correctOption: 1,
+        hint: "The correct syntax for a 'for' loop in Python is 'for i in [1, 2, 3, 4, 5]' where [1, 2, 3, 4, 5] represents the iterable."
+    },
+    { 
+        question: "How do you iterate over both the index and elements of a list in a 'for' loop?",
+        options: [
+            "Using the enumerate() function",
+            "Using the range() function",
+            "Using the zip() function",
+            "Using a nested loop"
+        ],
+        correctOption: 0,
+        hint: "You can iterate over both the index and elements of a list in a 'for' loop using the enumerate() function."
+    },
+    { 
+        question: "Which statement is used to execute a block of code only if none of the conditions in the 'if' statement are true?",
+        options: [
+            "else",
+            "elif",
+            "unless",
+            "otherwise"
+        ],
+        correctOption: 0,
+        hint: "The 'else' statement in Python is used to execute a block of code only if none of the conditions in the 'if' statement are true."
+    }
+];
+
+const questionsInheritance = [
+    { 
+        question: "What is inheritance in Python?",
+        options: [
+            "A way to create new objects",
+            "A mechanism to access attributes of a class",
+            "A method for encapsulating data",
+            "A technique to define functions"
+        ],
+        correctOption: 0,
+        hint: "Inheritance in Python allows a new class to inherit attributes and methods from an existing class."
+    },
+    { 
+        question: "Which keyword is used to inherit a class in Python?",
+        options: [
+            "parent",
+            "base",
+            "extend",
+            "class"
+        ],
+        correctOption: 3,
+        hint: "In Python, the 'class' keyword is used to define a new class, including inheriting from a superclass."
+    },
+    { 
+        question: "What is the syntax for single inheritance in Python?",
+        options: [
+            "class Subclass(Superclass):",
+            "class Subclass extends Superclass:",
+            "class Subclass(Superclass):",
+            "class Superclass extends Subclass:"
+        ],
+        correctOption: 2,
+        hint: "The syntax for single inheritance in Python is 'class Subclass(Superclass):' where 'Subclass' inherits from 'Superclass'."
+    },
+    { 
+        question: "How can you call the constructor of a superclass in Python?",
+        options: [
+            "Using the parent() function",
+            "By directly calling the superclass constructor",
+            "Using the super().__init__() method",
+            "Constructors cannot be called from a subclass"
+        ],
+        correctOption: 2,
+        hint: "You can call the constructor of a superclass in Python using the 'super().__init__()' method."
+    },
+    { 
+        question: "Which method resolution order (MRO) algorithm does Python use?",
+        options: [
+            "BFS (Breadth-First Search)",
+            "DFS (Depth-First Search)",
+            "Dijkstra's Algorithm",
+            "C3 Linearization Algorithm"
+        ],
+        correctOption: 3,
+        hint: "Python uses the C3 Linearization Algorithm to determine the method resolution order (MRO) in multiple inheritance."
+    },
+    { 
+        question: "In multiple inheritance, if two superclasses have a method with the same name, which one gets called by default?",
+        options: [
+            "The first superclass listed",
+            "The last superclass listed",
+            "Both methods are called simultaneously",
+            "It depends on the order in which they are defined in the subclass"
+        ],
+        correctOption: 1,
+        hint: "In multiple inheritance, the method of the last superclass listed takes precedence if two superclasses have a method with the same name."
+    },
+    { 
+        question: "What is method overriding in Python?",
+        options: [
+            "Calling a method from a superclass",
+            "Redefining a method in a subclass with the same name as in the superclass",
+            "Defining a method with a different name in a subclass",
+            "Accessing private methods of a superclass"
+        ],
+        correctOption: 1,
+        hint: "Method overriding in Python involves redefining a method in a subclass with the same name as in the superclass."
+    },
+    { 
+        question: "What is an abstract base class (ABC) in Python?",
+        options: [
+            "A class that cannot be instantiated directly",
+            "A class with only abstract methods",
+            "A class with no methods",
+            "A class that inherits from another class"
+        ],
+        correctOption: 0,
+        hint: "An abstract base class (ABC) in Python is a class that cannot be instantiated directly and typically contains one or more abstract methods."
+    },
+    { 
+        question: "Which of the following is NOT a type of inheritance in Python?",
+        options: [
+            "Hierarchical Inheritance",
+            "Single Inheritance",
+            "Linear Inheritance",
+            "Multilevel Inheritance"
+        ],
+        correctOption: 2,
+        hint: "Linear Inheritance is not a type of inheritance in Python."
+    },
+    { 
+        question: "What does the term 'Diamond Problem' refer to in Python?",
+        options: [
+            "A problem in geometry",
+            "A problem in multiple inheritance where method resolution is ambiguous",
+            "A naming conflict in Python functions",
+            "A performance issue in Python programs"
+        ],
+        correctOption: 1,
+        hint: "The 'Diamond Problem' refers to a problem in multiple inheritance where method resolution is ambiguous due to the diamond-shaped inheritance structure."
+    },
+    { 
+        question: "What is the primary benefit of inheritance in Python?",
+        options: [
+            "Code redundancy",
+            "Code encapsulation",
+            "Code reusability",
+            "Code abstraction"
+        ],
+        correctOption: 2,
+        hint: "The primary benefit of inheritance in Python is code reusability, allowing existing code to be reused in new classes."
+    },
+    { 
+        question: "Which keyword is used to access the superclass in Python?",
+        options: [
+            "superclass",
+            "this",
+            "base",
+            "super"
+        ],
+        correctOption: 3,
+        hint: "In Python, the 'super' keyword is used to access the superclass."
+    },
+    { 
+        question: "Which concept allows a class to inherit from multiple superclasses in Python?",
+        options: [
+            "Single Inheritance",
+            "Multilevel Inheritance",
+            "Multiple Inheritance",
+            "Hierarchical Inheritance"
+        ],
+        correctOption: 2,
+        hint: "Multiple Inheritance in Python allows a class to inherit from multiple superclasses."
+    },
+    { 
+        question: "What does the super() function do in Python?",
+        options: [
+            "Calls a method from the subclass",
+            "Calls a method from the superclass",
+            "Creates a new instance of the superclass",
+            "Accesses private attributes of the superclass"
+        ],
+        correctOption: 1,
+        hint: "The 'super()' function in Python is used to call a method from the superclass."
+    },
+    { 
+        question: "When might composition be preferred over inheritance in Python?",
+        options: [
+            "When creating a complex class hierarchy",
+            "When code reusability is a priority",
+            "When flexibility and loose coupling are desired",
+            "When working with abstract base classes"
+        ],
+        correctOption: 2,
+        hint: "Composition might be preferred over inheritance in Python when flexibility and loose coupling are desired."
+    }
+];
+
+const questionsDataTypes = [
+    { 
+        question: "What data type is used to represent whole numbers in Python?",
+        options: [
+            "float",
+            "str",
+            "int",
+            "list"
+        ],
+        correctOption: 2,
+        hint: "Whole numbers in Python are represented using the 'int' data type."
+    },
+    { 
+        question: "Which of the following data types is mutable?",
+        options: [
+            "int",
+            "tuple",
+            "list",
+            "str"
+        ],
+        correctOption: 2,
+        hint: "Mutable data types in Python can be modified after creation. Lists are mutable."
+    },
+    { 
+        question: "Which data type in Python is used to represent a collection of key-value pairs?",
+        options: [
+            "dict",
+            "set",
+            "list",
+            "tuple"
+        ],
+        correctOption: 0,
+        hint: "In Python, dictionaries are used to represent collections of key-value pairs."
+    },
+    { 
+        question: "What function can be used to convert a string to an integer?",
+        options: [
+            "int()",
+            "str()",
+            "float()",
+            "list()"
+        ],
+        correctOption: 0,
+        hint: "The 'int()' function in Python can be used to convert a string to an integer."
+    },
+    { 
+        question: "Which of the following data types is immutable?",
+        options: [
+            "dict",
+            "set",
+            "tuple",
+            "list"
+        ],
+        correctOption: 2,
+        hint: "Immutable data types in Python cannot be modified after creation. Tuples are immutable."
+    },
+    { 
+        question: "What data type is used to represent a sequence of characters in Python?",
+        options: [
+            "str",
+            "int",
+            "list",
+            "float"
+        ],
+        correctOption: 0,
+        hint: "Strings in Python are used to represent sequences of characters."
+    },
+    { 
+        question: "Which function can be used to convert a floating-point number to an integer?",
+        options: [
+            "int()",
+            "str()",
+            "float()",
+            "list()"
+        ],
+        correctOption: 0,
+        hint: "The 'int()' function in Python can be used to convert a floating-point number to an integer."
+    },
+    { 
+        question: "What data type is used to represent unordered collections of unique items?",
+        options: [
+            "list",
+            "tuple",
+            "dict",
+            "set"
+        ],
+        correctOption: 3,
+        hint: "Sets in Python are used to represent unordered collections of unique items."
+    },
+    { 
+        question: "Which data type is used to represent complex numbers in Python?",
+        options: [
+            "float",
+            "int",
+            "complex",
+            "str"
+        ],
+        correctOption: 2,
+        hint: "Complex numbers in Python are represented using the 'complex' data type."
+    },
+    { 
+        question: "Which of the following data types is used to represent a sequence of elements?",
+        options: [
+            "set",
+            "dict",
+            "list",
+            "int"
+        ],
+        correctOption: 2,
+        hint: "Lists in Python are used to represent ordered sequences of elements."
+    },
+    { 
+        question: "What function can be used to convert an integer to a string?",
+        options: [
+            "str()",
+            "int()",
+            "float()",
+            "list()"
+        ],
+        correctOption: 0,
+        hint: "The 'str()' function in Python can be used to convert an integer to a string."
+    },
+    { 
+        question: "Which data type represents the absence of a value in Python?",
+        options: [
+            "str",
+            "bool",
+            "None",
+            "list"
+        ],
+        correctOption: 2,
+        hint: "In Python, the 'None' keyword is used to represent the absence of a value."
+    },
+    { 
+        question: "What data type is used to represent Boolean values in Python?",
+        options: [
+            "int",
+            "bool",
+            "str",
+            "float"
+        ],
+        correctOption: 1,
+        hint: "Boolean values in Python are represented using the 'bool' data type."
+    },
+    { 
+        question: "Which data type is used to represent an ordered and immutable collection of items?",
+        options: [
+            "list",
+            "set",
+            "dict",
+            "tuple"
+        ],
+        correctOption: 3,
+        hint: "Tuples in Python are used to represent ordered and immutable collections of items."
+    },
+    { 
+        question: "What data type is used to represent an ordered collection of items where each item is associated with a key?",
+        options: [
+            "list",
+            "tuple",
+            "dict",
+            "set"
+        ],
+        correctOption: 2,
+        hint: "Dictionaries in Python are used to represent ordered collections of items where each item is associated with a key."
+    }
+];
+
+
+
+// Extract badge_level from the DOM
+var topicElement = document.getElementById('topic');
+
+var topic = topicElement.textContent || topicElement.innerText;
+
+    let selectedQuestions; // Make sure this is accessible to the entire script
+    if (topic=="Control Structures") {
+        selectedQuestions = questionsControlStructures;
+    }
+    else if (topic=="Arrays") {
+        selectedQuestions = questionsPythonArrays;
+    }
+    else if (topic=="Inheritance") {
+        selectedQuestions = questionsInheritance;
+    }
+    else if (topic=="Data Types") {
+        selectedQuestions = questionsDataTypes;
+    }
+    else{
+        selectedQuestions=questionsPython;
+    }
+
+    // Shuffle the array and select the first 10 questions
+    let shuffled = selectedQuestions.sort(() => 0.5 - Math.random());
+    let questions = shuffled.slice(0, 10);
+
+
+    let currentQuestionIndex = 0;
+    let answers = new Array(questions.length).fill(null);
+    const questionElement = document.getElementById('question');
+    const optionsElement = document.getElementById('options');
+    const hintBox = document.getElementById('hintBox');
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = 'Start Quiz'; // Set initial button text
+    let restartBtn = document.getElementById('restartBtn');
+    restartBtn.style.display = 'none';
+
+    document.getElementById('restartBtn').addEventListener('click', function() {
+        location.reload(); // Reload the page
+        this.style.display = 'none'; // Hide the button after clicking
+    });
+
+    function startTimer(duration, display) {
+        var timer = duration, minutes, seconds;
+        var interval = setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = minutes + ":" + seconds;
+
+            if (timer < 10) {
+                display.classList.add('blink');
+            }
+
+            if (--timer < 0) {
+                clearInterval(interval);
+                display.classList.remove('blink');
+                showResults(); // Call showResults when the timer ends
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+            showResults();
+            return;
+        }
+
+        const currentQuestion = questions[currentQuestionIndex];
+        questionElement.textContent = `Question ${currentQuestionIndex + 1}: ${currentQuestion.question}`;
+        optionsElement.innerHTML = '';
+        currentQuestion.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option;
+            li.onclick = () => selectOption(index);
+            optionsElement.appendChild(li);
+        });
+        hintBox.style.display = 'none';
+        
+        nextBtn.textContent = currentQuestionIndex === 0 && !timerStarted ? 'Start Quiz' : 'Next Question';
+       
+    }
+
+    const selectOption = (index) => {
+            answers[currentQuestionIndex] = index === questions[currentQuestionIndex].correctOption;
+            // Remove 'selected' class from all options and then add it to the clicked one
+            document.querySelectorAll('#options li').forEach((li, liIndex) => {
+                li.classList.remove('selected');
+                if (liIndex === index) {
+                    li.classList.add('selected');
+                }
+            });
+            // Mark the circle for the current question as answered (green) regardless of the answer being correct
+            document.querySelector(`.circle[data-index="${currentQuestionIndex + 1}"]`).style.backgroundColor = '#4CAF50';
+        };
+
+    nextBtn.onclick = () => {
+        if (!timerStarted) {
+            startTimer(startTime, timerElement);
+            timerStarted = true;
+            restartBtn.style.display = 'inline';
+        }
+        if (nextBtn.textContent=="Start Quiz") {
+            nextBtn.textContent = currentQuestionIndex === 0 && !timerStarted ? 'Start Quiz' : 'Next Question';
+        }
+        else
+        {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+        
+    };
+    
+    document.getElementById('hintBtn').onclick = () => {
+        hintBox.textContent = questions[currentQuestionIndex].hint;
+        hintBox.style.display = 'block';
+    };
+
+    function showResults() {
+    const score = answers.filter(Boolean).length;
+    const message = `Your score: ${score} out of ${questions.length}`;
+
+    // Display SweetAlert popup
+    Swal.fire({
+        title: 'Quiz Results',
+        text: message,
+        icon: 'info', // You can customize the icon (info, success, error, warning)
+        confirmButtonText: 'Try again'
+    }).then((result) => {
+        // Handle the OK button click if needed
+        if (result.isConfirmed) {
+            submitScore('ss',score); // Submit score after user closes the popup
+            location.reload();
+        }
+    });
+}
+
+
+    function submitScore(name,points) {
+        fetch(`/quize/${name}/`, { // Assuming 'quize/' is the URL pattern for the Quize view
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Function to get CSRF token from cookies
+                },
+                body: JSON.stringify({ points: points })
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // Redirect to the provided URL by the server if needed
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+    loadQuestion(); // Initially load the first question or start screen
+});
+
+
+</script>
+{% endblock %}

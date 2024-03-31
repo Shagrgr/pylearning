@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+<div class="container">
+
+    <div class="post-display-panel">
+        {% for post in posts %}
+        <div class="post">
+            <div class="post-header">
+                <span class="post-author">{{ post.author.username }}</span>
+                <span class="post-timestamp"><i class="fa fa-clock-o"></i> {{ post.created_at }}</span>
+            </div>
+            <div class="post-content">
+                <p>{{ post.content }}</p>
+            </div>
+            <div class="post-actions">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="postId" value="{{ post.id }}">
+                    <input type="text" class="form-input" name="commentContent" placeholder="Type your comment...">
+                    <button class="send-button" type="submit">Send</button>
+                </form>
+            </div>
+          
+            <!-- Comments Section -->
+            <div class="comments-section">
+                {% for comment in post.comments.all %}
+                <div class="comment">
+                    <div class="comment-header">
+                        <span class="comment-author">{{ comment.author.username }}</span>
+                        <span class="comment-timestamp"><i class="fa fa-clock-o"></i> {{ comment.created_at }}</span>
+                    </div>
+                    <div class="comment-content">
+                        <p>{{ comment.content }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="">
+      <form method="post" action="" class="post-form">
+          {% csrf_token %}
+          <div class="form-group">
+              <textarea class="form-control post-textarea" name="postContent" rows="1" placeholder="Post your questions?"></textarea>
+              <button class="btn btn-primary post-share-button" type="submit">Share</button>
+          </div>
+      </form>
+  </div>
+  
+</div>
+
+{% endblock %}
+
+
+
+{% block extrastyle %}
+<style>
+
+.post-input-panel {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    background-color: #f8f9fa; /* Light grey background */
+    border-top: 2px solid #dee2e6; /* Subtle border top */
+    width: 100%; /* Ensure the panel spans the full width */
+}
+
+.post-form .form-group {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 10px; /* Adds space between textarea and button, adjust if needed */
+}
+
+.post-textarea {
+    width: calc(80% - 5px); /* Increase to 75% width, adjust gap calculation accordingly */
+    border-radius: 20px; /* Rounded corners for a modern look */
+    padding: 10px; /* Comfortable padding inside textarea */
+    border: 1px solid #ced4da; /* Subtle border */
+    resize: none; /* Prevents resizing of the textarea */
+}
+
+.post-share-button {
+    width: calc(20% - 5px); /* Decrease to 25% width, adjust gap calculation accordingly */
+    padding: 10px; /* Keep or adjust for smaller appearance */
+    font-size: 14px; /* Adjust based on visual preference */
+    border-radius: 20px; /* Rounded corners for the button */
+    white-space: nowrap; /* Prevents wrapping text inside the button */
+    text-align: center;
+}
+
+
+.container {
+    max-width: 80%; /* Ensures content is not too wide on larger screens */
+    margin: auto; /* Center align the container */
+    margin-top: 5px;
+}
+
+.post-display-panel {
+    max-height: calc(100vh - 170px); /* Adjusted for fixed panel height and header */
+    overflow-y: auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.1); /* Modern shadow effect */
+    padding: 20px;
+}
+
+.post, .comments-section {
+    background-color: #fff;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1); /* Subtle shadow for depth */
+    padding: 15px;
+}
+
+.post-header, .comment-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.form-input {
+    border: 1px solid #ccc;
+    border-radius: 18px; /* Rounded edges for a modern look */
+    padding: 10px 20px;
+    font-size: 14px;
+    outline: none;
+    width: calc(100% - 90px); /* Adjust width to fit button */
+}
+
+.send-button {
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 18px; /* Matching rounded edges */
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    outline: none;
+}
+
+.send-button:hover, .post-share-button:hover {
+    background-color: #0056b3;
+}
+
+.post-input-panel {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    
+    border-top: 1px solid #ccc;
+    padding: 10px 20px; /* Slightly larger padding for better visual */
+    box-shadow: 0 -2px 5px rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+}
+
+.post-textarea {
+    flex-grow: 1; /* Allow textarea to fill space */
+    margin-right: 10px; /* Spacing between textarea and button */
+    resize: none; /* Prevent resizing */
+}
+</style>
+{% endblock %}
+
+
+{% block extrajs %}
+
+<script>
+// JavaScript goes here
+</script>
+{% endblock %}
